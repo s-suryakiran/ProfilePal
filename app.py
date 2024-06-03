@@ -43,7 +43,8 @@ def get_context(query):
 
 
 def chatter(user_input, context, history):
-    combined_history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in history])
+    # combined_history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in history])
+    combined_history = "" 
     prompt = (
         f"Here is some information about Suryakiran:\n{context}\n"
         "Based on this information and our previous conversation, answer the following question concisely and to the point:\n"
