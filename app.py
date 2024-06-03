@@ -24,7 +24,7 @@ pc = Pinecone(api_key=pinecone_api_key)
 index = pc.Index(index_name)
 
 # Initialize the embedding model
-embed_model = SentenceTransformer("BAAI/bge-large-en-v1.5")
+embed_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 st.title("ProfilePal")
 
@@ -43,7 +43,7 @@ def chatter(user_input, context, history):
     combined_history = "\n".join(
         [f"{msg['role']}: {msg['content']}" for msg in history]
     )
-    prompt = f"""
+    prompt_injected = f"""
         Here is some information about Suryakiran:\n{context}\n
         Based on this information and our previous conversation, answer the following question concisely and to the point:\n
         {combined_history}\n
@@ -56,7 +56,7 @@ def chatter(user_input, context, history):
     }
     data = {
         "model": "meta/llama3-8b-instruct",
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": [{"role": "user", "content": prompt_injected}],
         "temperature": 1,
         "top_p": 1,
         "max_tokens": 1024,
