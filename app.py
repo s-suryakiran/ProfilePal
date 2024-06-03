@@ -13,6 +13,7 @@ from pinecone import Pinecone
 # pinecone_api_key = os.getenv("PINECONE_API_KEY")
 # index_name = os.getenv("INDEX_NAME")
 # os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 #streamlit secrets
 nvidia_api_key = st.secrets["NVIDIA_API_KEY"]
 pinecone_api_key = st.secrets["PINECONE_API_KEY"]
@@ -84,9 +85,11 @@ if prompt := st.chat_input("Ask anything about Surya.."):
             st.markdown(assistant_response)
 
     else:
+        print("called")
         context = get_context(prompt)
+        print("got context")
         response_stream = chatter(prompt, context, st.session_state.messages)
-
+        print("response stream")
         assistant_response = ""
         with st.chat_message("assistant"):
             response_placeholder = st.empty()
