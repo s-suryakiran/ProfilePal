@@ -4,7 +4,6 @@ import streamlit as st
 import os
 from sentence_transformers import SentenceTransformer
 from pinecone import Pinecone
-from langchain_core.messages import AIMessage, HumanMessage
 
 # Load environment variables from .env file
 # load_dotenv()
@@ -14,7 +13,6 @@ from langchain_core.messages import AIMessage, HumanMessage
 # pinecone_api_key = os.getenv("PINECONE_API_KEY")
 # index_name = os.getenv("INDEX_NAME")
 # os.environ["TOKENIZERS_PARALLELISM"] = "false"
-
 #streamlit secrets
 nvidia_api_key = st.secrets["NVIDIA_API_KEY"]
 pinecone_api_key = st.secrets["PINECONE_API_KEY"]
@@ -43,9 +41,8 @@ def get_context(query):
     return context
 
 
-def chatter(user_input, context, history= None):
-    # combined_history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in history])
-    combined_history = "" 
+def chatter(user_input, context, history):
+    combined_history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in history])
     prompt = (
         f"Here is some information about Suryakiran:\n{context}\n"
         "Based on this information and our previous conversation, answer the following question concisely and to the point:\n"
@@ -71,43 +68,32 @@ def chatter(user_input, context, history= None):
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# for message in st.session_state.messages:
-#     with st.chat_message(message["role"]):
-#         st.markdown(message["content"])
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
 
 if prompt := st.chat_input("Ask anything about Surya.."):
-    # with st.chat_message("user"):
-    #     st.markdown(prompt)
-    st.session_state.messages.append(HumanMessage(content=prompt))
+    with st.chat_message("user"):
+        st.markdown(prompt)
+    st.session_state.messages.append({"role":"user", "content": prompt})
 
     if prompt.lower() in ["hi", "hello", "hey"]:
         assistant_response = "Hello there! Feel free to ask me anything about Surya."
-        # with st.chat_message("assistant"):
-            # st.markdown(assistant_response)
+        with st.chat_message("assistant"):
+            st.markdown(assistant_response)
 
     else:
-        print("called")
         context = get_context(prompt)
-        print("got context")
-        # response_stream = chatter(prompt, context, st.session_state.messages)
-        response_stream = chatter(prompt, context)
-        print("response stream")
+        response_stream = chatter(prompt, context, st.session_state.messages)
+
         assistant_response = ""
-        # with st.chat_message("assistant"):
-        response_placeholder = st.empty()
-        for chunk in response_stream:
-            if chunk.choices[0].delta.content is not None:
-                assistant_response += chunk.choices[0].delta.content
-                    # response_placeholder.markdown(assistant_response)
+        with st.chat_message("assistant"):
+            response_placeholder = st.empty()
+            for chunk in response_stream:
+                if chunk.choices[0].delta.content is not None:
+                    assistant_response += chunk.choices[0].delta.content
+                    response_placeholder.markdown(assistant_response)
 
     
-    st.session_state.messages.append(AIMessage(content=assistant_response))
-
-    for message in st.session_state.messages:
-        if isinstance(message, AIMessage):
-            with st.chat_message("AI"):
-                st.write(message.content)
-        elif isinstance(message, HumanMessage):
-            with st.chat_message("Human"):
-                st.write(message.content)
+    st.session_state.messages.append({"role":"assistant", "content": assistant_response})
