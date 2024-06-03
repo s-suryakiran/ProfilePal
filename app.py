@@ -4,6 +4,7 @@ import streamlit as st
 import os
 from sentence_transformers import SentenceTransformer
 from pinecone import Pinecone
+from langchain_core.messages import AIMessage, HumanMessage
 
 # Load environment variables from .env file
 # load_dotenv()
@@ -70,20 +71,20 @@ def chatter(user_input, context, history= None):
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+# for message in st.session_state.messages:
+#     with st.chat_message(message["role"]):
+#         st.markdown(message["content"])
 
 
 if prompt := st.chat_input("Ask anything about Surya.."):
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    st.session_state.messages.append({"role":"user", "content": prompt})
+    # with st.chat_message("user"):
+    #     st.markdown(prompt)
+    st.session_state.messages.append(HumanMessage(content=prompt))
 
     if prompt.lower() in ["hi", "hello", "hey"]:
         assistant_response = "Hello there! Feel free to ask me anything about Surya."
-        with st.chat_message("assistant"):
-            st.markdown(assistant_response)
+        # with st.chat_message("assistant"):
+            # st.markdown(assistant_response)
 
     else:
         print("called")
@@ -93,12 +94,20 @@ if prompt := st.chat_input("Ask anything about Surya.."):
         response_stream = chatter(prompt, context)
         print("response stream")
         assistant_response = ""
-        with st.chat_message("assistant"):
-            response_placeholder = st.empty()
-            for chunk in response_stream:
-                if chunk.choices[0].delta.content is not None:
-                    assistant_response += chunk.choices[0].delta.content
-                    response_placeholder.markdown(assistant_response)
+        # with st.chat_message("assistant"):
+        response_placeholder = st.empty()
+        for chunk in response_stream:
+            if chunk.choices[0].delta.content is not None:
+                assistant_response += chunk.choices[0].delta.content
+                    # response_placeholder.markdown(assistant_response)
 
     
-    st.session_state.messages.append({"role":"assistant", "content": assistant_response})
+    st.session_state.messages.append(AIMessage(content=assistant_response))
+
+    for message in st.session_state.messages:
+        if isinstance(message, AIMessage):
+            with st.chat_message("AI"):
+                st.write(message.content)
+        elif isinstance(message, HumanMessage):
+            with st.chat_message("Human"):
+                st.write(message.content)
