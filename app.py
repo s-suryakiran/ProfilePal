@@ -6,13 +6,13 @@ from sentence_transformers import SentenceTransformer
 from pinecone import Pinecone
 
 # Load environment variables from .env file
-load_dotenv()
+# load_dotenv()
 
 #OS environment variable
 # nvidia_api_key = os.getenv("NVIDIA_API_KEY")
 # pinecone_api_key = os.getenv("PINECONE_API_KEY")
 # index_name = os.getenv("INDEX_NAME")
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
+# os.environ["TOKENIZERS_PARALLELISM"] = "false"
 #streamlit secrets
 nvidia_api_key = st.secrets["NVIDIA_API_KEY"]
 pinecone_api_key = st.secrets["PINECONE_API_KEY"]
