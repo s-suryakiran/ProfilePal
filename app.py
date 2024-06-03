@@ -108,11 +108,11 @@ if prompt := st.chat_input("Ask anything about Surya.."):
 
     else:
         context = get_context(prompt)
-        response_stream = chatter(prompt, context, st.session_state.messages)
+        assistant_response = chatter(prompt, context, st.session_state.messages)
 
         # assistant_response = ""
         with st.chat_message("assistant"):
-            st.markdown(response_stream)
+            st.markdown(assistant_response)
         #     response_placeholder = st.empty()
         #     for chunk in response_stream:
         #         if chunk.choices[0].delta.content is not None:
@@ -127,4 +127,4 @@ if prompt := st.chat_input("Ask anything about Surya.."):
         #             assistant_response += chunk.choices[0].delta.content
         #             response_placeholder.markdown(assistant_response)
 
-    st.session_state.messages.append({"role": "assistant", "content": response_stream})
+    st.session_state.messages.append({"role": "assistant", "content": assistant_response})
