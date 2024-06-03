@@ -35,13 +35,20 @@ def get_context(query):
     return context
 
 
-def chatter(user_input, context):
+def chatter(user_input, context, history):
+    combined_history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in history])
+    prompt = (
+        f"Here is some information about Suryakiran:\n{context}\n"
+        "Based on this information and our previous conversation, answer the following question concisely and to the point:\n"
+        f"{combined_history}\n"
+        f"User: {user_input}\nAssistant:"
+    )
     completion = client.chat.completions.create(
         model="meta/llama3-8b-instruct",
         messages=[
             {
                 "role": "user",
-                "content": context + user_input,
+                "content": prompt,
             }
         ],
         temperature=1,
@@ -72,7 +79,7 @@ if prompt := st.chat_input("Ask anything about Surya.."):
 
     else:
         context = get_context(prompt)
-        response_stream = chatter(prompt, context)
+        response_stream = chatter(prompt, context, st.session_state.messages)
 
         assistant_response = ""
         with st.chat_message("assistant"):
