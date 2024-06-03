@@ -42,7 +42,7 @@ def get_context(query):
     return context
 
 
-def chatter(user_input, context, history):
+def chatter(user_input, context, history= None):
     # combined_history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in history])
     combined_history = "" 
     prompt = (
@@ -89,7 +89,8 @@ if prompt := st.chat_input("Ask anything about Surya.."):
         print("called")
         context = get_context(prompt)
         print("got context")
-        response_stream = chatter(prompt, context, st.session_state.messages)
+        # response_stream = chatter(prompt, context, st.session_state.messages)
+        response_stream = chatter(prompt, context)
         print("response stream")
         assistant_response = ""
         with st.chat_message("assistant"):
