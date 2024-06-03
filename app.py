@@ -1,91 +1,10 @@
-import json
-import requests
 import streamlit as st
-from pinecone import Pinecone
-from sentence_transformers import SentenceTransformer
-# from openai import OpenAI
-# Load environment variables from .env file
-# load_dotenv()
 
-# OS environment variable
-# nvidia_api_key = os.getenv("NVIDIA_API_KEY")
-# pinecone_api_key = os.getenv("PINECONE_API_KEY")
-# index_name = os.getenv("INDEX_NAME")
-# os.environ["TOKENIZERS_PARALLELISM"] = "false"
+from src.chat_completion import complete_chat
+from src.retrieval import get_context
 
-
-# streamlit secrets
-nvidia_api_key = st.secrets["NVIDIA_API_KEY"]
-pinecone_api_key = st.secrets["PINECONE_API_KEY"]
-index_name = st.secrets["INDEX_NAME"]
-
-# Initialize Pinecone
-pc = Pinecone(api_key=pinecone_api_key)
-index = pc.Index(index_name)
-
-# Initialize the embedding model
-embed_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 st.title("ProfilePal")
-
-
-def get_context(query):
-    res = embed_model.encode(query)
-    ans = index.query(vector=res.tolist(), top_k=2, include_metadata=True)
-    context = ""
-    for match in ans["matches"]:
-        context += match["metadata"]["text"] + " "
-
-    return context
-
-
-def chatter(user_input, context, history):
-    combined_history = "\n".join(
-        [f"{msg['role']}: {msg['content']}" for msg in history]
-    )
-    prompt_injected = f"""
-        Here is some information about Suryakiran:\n{context}\n
-        Based on this information and our previous conversation, answer the following question concisely and to the point:\n
-        {combined_history}\n
-        User: {user_input}\nAssistant:
-    """
-
-    header = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {nvidia_api_key}",
-    }
-    data = {
-        "model": "meta/llama3-8b-instruct",
-        "messages": [{"role": "user", "content": prompt_injected}],
-        "temperature": 1,
-        "top_p": 1,
-        "max_tokens": 1024,
-        "stream": False
-    }
-    data = json.dumps(data)
-    completion = requests.post(
-        url="https://integrate.api.nvidia.com/v1/chat/completions",
-        headers=header,
-        data=data,
-    )
-
-    # completion = client.chat.completions.create(
-    #     model="meta/llama3-8b-instruct",
-    #     messages=[
-    #         {
-    #             "role": "user",
-    #             "content": prompt,
-    #         }
-    #     ],
-    #     temperature=1,
-    #     top_p=1,
-    #     max_tokens=1024,
-    #     stream=False,
-    # )
-
-    return completion.json()["choices"][0]["message"]["content"]
-    # print(completion.text)
-    # return completion.text
 
 
 if "messages" not in st.session_state:
@@ -108,23 +27,10 @@ if prompt := st.chat_input("Ask anything about Surya.."):
 
     else:
         context = get_context(prompt)
-        assistant_response = chatter(prompt, context, st.session_state.messages)
-
-        # assistant_response = ""
+        assistant_response = complete_chat(prompt, context, st.session_state.messages)
         with st.chat_message("assistant"):
             st.markdown(assistant_response)
-        #     response_placeholder = st.empty()
-        #     for chunk in response_stream:
-        #         if chunk.choices[0].delta.content is not None:
-        #             assistant_response += chunk.choices[0].delta.content
-        #             response_placeholder.markdown(assistant_response)
-        # assistant_response = ""
-        # with st.chat_message("assistant"):
-        #     response_placeholder = st.empty()
-        #     for chunk in json.loads(response_stream):
-        #         print(chunk)
-        #         if chunk.choices[0].delta.content is not None:
-        #             assistant_response += chunk.choices[0].delta.content
-        #             response_placeholder.markdown(assistant_response)
 
-    st.session_state.messages.append({"role": "assistant", "content": assistant_response})
+    st.session_state.messages.append(
+        {"role": "assistant", "content": assistant_response}
+    )
