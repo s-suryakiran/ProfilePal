@@ -3,4 +3,3 @@ openai
 python-dotenv
 sentence-transformers
 pinecone-client
-langchain
