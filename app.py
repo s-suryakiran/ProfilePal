@@ -8,9 +8,15 @@ from pinecone import Pinecone
 # Load environment variables from .env file
 load_dotenv()
 
-nvidia_api_key = os.getenv("NVIDIA_API_KEY")
-pinecone_api_key = os.getenv("PINECONE_API_KEY")
-index_name = os.getenv("INDEX_NAME")
+#OS environment variable
+# nvidia_api_key = os.getenv("NVIDIA_API_KEY")
+# pinecone_api_key = os.getenv("PINECONE_API_KEY")
+# index_name = os.getenv("INDEX_NAME")
+
+#streamlit secrets
+nvidia_api_key = st.secrets["NVIDIA_API_KEY"]
+pinecone_api_key = st.secrets["PINECONE_API_KEY"]
+index_name = st.secrets["INDEX_NAME"]
 
 # Initialize Pinecone
 pc = Pinecone(api_key=pinecone_api_key)
